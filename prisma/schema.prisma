@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String         @id @default(cuid())
+  clerkId     String         @unique
+  name        String
+  email       String         @unique
+  image       String?
+  enrollments Enrollment[]
+  progress    UserProgress[]
+  userBadges  UserBadge[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+model Badge {
+  id        String   @id @default(cuid())
+  name      String
+  image     String
+  createdAt DateTime @default(now())
+  roadmap   Roadmap? @relation("RoadmapBadge")
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+model Roadmap {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  image       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  subtopics   Subtopic[]
+  enrollments Enrollment[]
+
+  badge   Badge?  @relation("RoadmapBadge", fields: [badgeId], references: [id])
+  badgeId String? @unique
+}
+
+model Subtopic {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  roadmapId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roadmap      Roadmap        @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  userProgress UserProgress[]
+
+  @@unique([roadmapId, title])
+  @@index([roadmapId])
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  userId     String
+  roadmapId  String
+  enrolledAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roadmap Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roadmapId])
+  @@index([userId])
+  @@index([roadmapId])
+}
+
+model UserProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  subtopicId   String
+  currentIndex Int // Index in the roadmap/subtopic flow
+  updatedAt    DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtopic Subtopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subtopicId])
+  @@index([userId])
+  @@index([subtopicId])
+}
