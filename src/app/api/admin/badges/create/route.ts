@@ -23,18 +23,28 @@ export async function POST(req: Request) {
 
     if (!roadmap) return errorResponse("Roadmap not found", 404);
 
-    // Create badge
+    // Step 1: Create badge
     const badge = await prisma.badge.create({
       data: {
         name,
         image,
-        roadmap: {
-          connect: { id: roadmapId },
-        },
       },
     });
 
-    return successResponse("Badge created successfully", badge);
+    const roadmapF = await prisma.roadmap.findUnique({
+      where: { id: roadmapId },
+    });
+    if(roadmapF) console.log(roadmapF);
+    // Step 2: Attach badge to roadmap (set badgeId in Roadmap)
+    await prisma.roadmap.update({
+      where: { id: roadmapId },
+      data: {
+        badgeId: badge.id,
+      },
+    });
+
+    // Optional: Include roadmap in response if you want
+    return successResponse("Badge created and assigned to roadmap successfully", badge);
   } catch (error) {
     console.error("POST /admin/badges/create error:", error);
     return errorResponse("Something went wrong", 500);

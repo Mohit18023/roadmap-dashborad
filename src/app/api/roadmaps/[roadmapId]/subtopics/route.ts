@@ -9,6 +9,7 @@ interface Params {
     roadmapId: string;
   };
 }
+// /app/api/roadmaps/[roadmapId]/subtopics/route.ts
 
 export async function GET(_: Request, { params }: Params) {
   try {
@@ -16,6 +17,7 @@ export async function GET(_: Request, { params }: Params) {
     if (!userId) return errorResponse("Unauthorized", 401);
 
     const { roadmapId } = params;
+    if (!roadmapId) return errorResponse("Missing roadmap ID", 400);
 
     const subtopics = await prisma.subtopic.findMany({
       where: { roadmapId },

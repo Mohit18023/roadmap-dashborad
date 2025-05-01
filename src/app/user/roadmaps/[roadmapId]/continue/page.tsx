@@ -1,28 +1,25 @@
-// app/(dashboard)/roadmaps/[id]/learn/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { use } from 'react';
+import ContinueRoadmap from './ContinueRoadmap';
+import { Loader2 } from "lucide-react";
 
-export default function LearnPage() {
-  const { id } = useParams();
-  const [subtopics, setSubtopics] = useState([]);
+ function RoadmapWrapper({ params }: { params: Promise<{ roadmapId: string }> }) {
+  const { roadmapId } = use(params);
+  return <ContinueRoadmap roadmapId={roadmapId} />;
+}
 
-  useEffect(() => {
-    const fetchLearningData = async () => {
-      try {
-        const res = await fetch(`/api/roadmaps/${id}/learn`);
-        const data = await res.json();
-        setSubtopics(data.data);
-      } catch (err) {
-        console.error('Error fetching learning content', err);
+export default function Page({ params }: { params: Promise<{ roadmapId: string }> }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
       }
-    };
-
-    fetchLearningData();
-  }, [id]);
-
-  return <div>Learning Page for Roadmap {id} (UI to be implemented)
-  {subtopics}
-  </div>;
+    >
+      <RoadmapWrapper params={params} />
+    </Suspense>
+  );
 }

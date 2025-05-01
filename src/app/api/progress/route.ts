@@ -47,8 +47,10 @@ export async function GET(request: Request) {
         },
       });
     }
-
-    if (!progress) return errorResponse("No progress found", 404);
+    if (!progress || (Array.isArray(progress) && progress.length === 0)) {
+      return errorResponse("No progress found", 404);
+    }
+    
 
     return NextResponse.json({
       success: true,

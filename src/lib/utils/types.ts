@@ -113,3 +113,20 @@ export interface Roadmap {
   createdAt: Date; // Dates as strings since it's JSON
   updatedAt: Date;
 }
+
+export interface ExtractedRoadmap {
+  title: string;
+  description: string;
+  subtopics: {
+    title: string;
+    description: string;
+  }[];
+}
+
+
+export interface ProcessingStatus {
+  isProcessing: boolean;
+  progress: number;
+  stage: 'idle' | 'uploading' | 'processing' | 'complete' | 'error';
+  message: string;
+}

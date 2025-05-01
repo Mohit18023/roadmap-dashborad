@@ -5,7 +5,16 @@ import { errorResponse } from "@/lib/utils/response";
 
 export async function GET() {
   try {
-    const badges = await prisma.badge.findMany();
+    const badges = await prisma.badge.findMany({
+      include: {
+        roadmap: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
     if (!badges.length) return errorResponse("No badges found", 404);
 
     return NextResponse.json({
